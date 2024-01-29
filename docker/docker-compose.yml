@@ -1,25 +1,38 @@
-version: "3.8" 
-services: 
- tasty-service: 
-  depends_on:
-    - restaurant-postgres 
-  image: "tasty-service" 
-  container_name: "tasty-service" 
-  ports: 
-    - 9001:9001
-    - 8001:8001
-  environment: 
-    - BPL_JVM_THREAD_COUNT=50 
-    - SPRING_DATASOURCE_URL=jdbc:postgresql://restaurant-postgres:5432/restaurantdb_catalog
-    - SPRING_PROFILES_ACTIVE=testdata 
-    - BPL_DEBUG_ENABLED=true
-    - BPL_DEBUG_PORT=8001
- restaurant-postgres: 
-  image: "postgres:14.4"
-  container_name: "restaurant-postgres"
-  ports:
-    - 5432:5432
-  environment:
-    - POSTGRES_USER=user
-    - POSTGRES_PASSWORD=password
-    - POSTGRES_DB=restaurantdb_catalog
+version: "3.8"
+services:
+  tasty-service:
+    depends_on:
+      - restaurant-postgres
+    image: "tasty-service"
+    container_name: "tasty-service"
+    ports:
+      - 9001:9001
+      - 8001:8001
+    environment:
+      - BPL_JVM_THREAD_COUNT=50
+      - BPL_DEBUG_ENABLED=true
+      - BPL_DEBUG_PORT=8001
+      - SPRING_CLOUD_CONFIG_URI=http://config-service:8888
+      - SPRING_DATASOURCE_URL=jdbc:postgresql://restaurant-postgres:5432/restaurantdb_tasty
+      - SPRING_PROFILES_ACTIVE=testdata
+  
+  config-service:
+    image: "config-service"
+    container_name: "config-service"
+    ports:
+      - 8888:8888
+      - 9888:9888
+    environment:
+      - BPL_JVM_THREAD_COUNT=50
+      - BPL_DEBUG_ENABLED=true
+      - BPL_DEBUG_PORT=9888
+      
+  restaurant-postgres:
+    image: "postgres:14.10"
+    container_name: "restaurant-postgres"
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=restaurantdb_tasty
