@@ -1,0 +1,3 @@
+include('F:\\Workshop\\config-service\\Tiltfile')
+include('F:\\Workshop\\tasty-service\\Tiltfile')
+update_settings(max_parallel_updates=1)
