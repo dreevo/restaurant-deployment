@@ -1,3 +1,15 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: postgres-config
+  labels:
+    db: restaurant-postgres
+data:
+  init.sql: |
+    CREATE DATABASE restaurantdb_tasty;
+    CREATE DATABASE restaurantdb_order;
+
+---
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -21,8 +33,6 @@ spec:
               value: user
             - name: POSTGRES_PASSWORD
               value: password 
-            - name: POSTGRES_DB
-              value: restaurantdb_catalog
           resources:
             requests:
               cpu: 100m
@@ -30,6 +40,13 @@ spec:
             limits:
               cpu: 200m
               memory: 120Mi
+          volumeMounts:
+            - mountPath: /docker-entrypoint-initdb.d
+              name: postgres-config-volume
+      volumes:
+        - name: postgres-config-volume
+          configMap:
+            name: postgres-config
 
 ---
 

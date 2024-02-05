@@ -1,0 +1,2 @@
+CREATE DATABASE restaurantdb_tasty;
+CREATE DATABASE restaurantdb_order;
