@@ -75,3 +75,12 @@ services:
     container_name: "restaurant-redis"
     ports:
       - 6379:6379 
+
+  restaurant-rabbitmq:
+    image: rabbitmq:3.10-management
+    container_name: polar-rabbitmq
+    ports:
+      - 5672:5672
+      - 15672:15672
+    volumes: 
+      - ./rabbitmq/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf
