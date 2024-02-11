@@ -31,6 +31,7 @@ services:
       - SPRING_CLOUD_CONFIG_URI=http://config-service:8888
       - SPRING_R2DBC_URL=r2dbc:postgresql://restaurant-postgres:5432/restaurantdb_order
       - SPRING_FLYWAY_URL=jdbc:postgresql://restaurant-postgres:5432/restaurantdb_order
+      - SPRING_RABBITMQ_HOST=restaurant-rabbitmq
   
   config-service:
     image: "config-service"
@@ -58,6 +59,22 @@ services:
       - ORDER_SERVICE_URL=http://order-service:9002
       - SPRING_CLOUD_CONFIG_URI=http://config-service:8888
       - SPRING_REDIS_HOST=restaurant-redis
+
+  dispatcher-service:
+    depends_on:
+      - restaurant-rabbitmq
+    image: "dispatcher-service"
+    container_name: dispatcher-service
+    ports:
+      - 9003:9003
+      - 8003:8003
+    environment:
+      - BPL_DEBUG_ENABLED=true
+      - BPL_DEBUG_PORT=8003
+      - SPRING_CLOUD_CONFIG_URI=http://config-service:8888
+      - SPRING_RABBITMQ_HOST=restaurant-rabbitmq
+      
+
       
   restaurant-postgres:
     image: "postgres:14.10"
@@ -78,7 +95,7 @@ services:
 
   restaurant-rabbitmq:
     image: rabbitmq:3.10-management
-    container_name: polar-rabbitmq
+    container_name: restaurant-rabbitmq
     ports:
       - 5672:5672
       - 15672:15672
