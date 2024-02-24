@@ -1,0 +1,87 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: restaurant-keycloak
+  labels:
+    app: restaurant-keycloak
+spec:
+  selector:
+    matchLabels:
+      app: restaurant-keycloak
+  template:
+    metadata:
+      labels:
+        app: restaurant-keycloak
+    spec:
+      containers:
+        - name: restaurant-keycloak
+          image: quay.io/keycloak/keycloak:19.0
+          args:
+            - "start-dev"
+          ports:
+            - containerPort: 8080
+          env:
+            - name: KEYCLOAK_ADMIN
+              value: user
+            - name: KEYCLOAK_ADMIN_PASSWORD
+              value: password
+            - name: JAVA_OPTS_APPEND
+              value: "-Dkeycloak.import=/opt/keycloak/data/import/realm-config.json"
+          readinessProbe:
+            httpGet:
+              path: /realms/master
+              port: 8080
+            initialDelaySeconds: 5
+            periodSeconds: 10
+          resources:
+            requests:
+              cpu: 100m
+              memory: 350Mi
+            limits:
+              cpu: 500m
+              memory: 750Mi
+          volumeMounts:
+            - name: restaurant-keycloak-config-volume
+              mountPath: /opt/keycloak/data/import
+      volumes:
+        - name: restaurant-keycloak-config-volume
+          configMap:
+            name: restaurant-keycloak
+
+---
+
+apiVersion: v1
+kind: Service
+metadata:
+  name: restaurant-keycloak
+  labels:
+    app: restaurant-keycloak
+spec:
+  type: ClusterIP
+  selector:
+    app: restaurant-keycloak
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: 8080
+
+---
+
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: keycloak-ingress
+  labels:
+    app: restaurant-keycloak
+spec:
+  rules:
+    - host: restaurant-keycloak
+      http:
+        paths:
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: restaurant-keycloak
+                port:
+                  number: 80
