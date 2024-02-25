@@ -73,7 +73,11 @@ metadata:
   name: keycloak-ingress
   labels:
     app: restaurant-keycloak
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    nginx.ingress.kubernetes.io/ingress-class: nginx
 spec:
+  ingressClassName: nginx  
   rules:
     - host: restaurant-keycloak
       http:
