@@ -483,7 +483,7 @@ data:
           ],
           "disableableCredentialTypes": [],
           "requiredActions": [],
-          "realmRoles": ["customer", "default-roles-restaurant", "employee"],
+          "realmRoles": ["default-roles-restaurant", "employee"],
           "notBefore": 0,
           "groups": []
         }
@@ -939,7 +939,7 @@ data:
               "config": {
                 "user.attribute": "foo",
                 "access.token.claim": "true",
-                "claim.name": "realm_access.roles",
+                "claim.name": "roles",
                 "jsonType.label": "String",
                 "multivalued": "true"
               }

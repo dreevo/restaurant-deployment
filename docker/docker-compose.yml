@@ -15,6 +15,7 @@ services:
       - SPRING_CLOUD_CONFIG_URI=http://config-service:8888
       - SPRING_DATASOURCE_URL=jdbc:postgresql://restaurant-postgres:5432/restaurantdb_tasty
       - SPRING_PROFILES_ACTIVE=testdata
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI=http://host.docker.internal:8080/realms/restaurant
 
   order-service:
     depends_on:
@@ -32,6 +33,7 @@ services:
       - SPRING_R2DBC_URL=r2dbc:postgresql://restaurant-postgres:5432/restaurantdb_order
       - SPRING_FLYWAY_URL=jdbc:postgresql://restaurant-postgres:5432/restaurantdb_order
       - SPRING_RABBITMQ_HOST=restaurant-rabbitmq
+      - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI=http://host.docker.internal:8080/realms/restaurant
   
   config-service:
     image: "config-service"
