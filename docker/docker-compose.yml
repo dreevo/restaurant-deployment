@@ -5,6 +5,7 @@ services:
       - restaurant-postgres
       - fluent-bit 
       - restaurant-keycloak
+      - tempo
     image: "tasty-service"
     container_name: "tasty-service"
     ports:
@@ -18,6 +19,11 @@ services:
       - SPRING_DATASOURCE_URL=jdbc:postgresql://restaurant-postgres:5432/restaurantdb_tasty
       - SPRING_PROFILES_ACTIVE=testdata
       - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI=http://host.docker.internal:8080/realms/restaurant
+      - JAVA_TOOL_OPTIONS=-javaagent:/workspace/BOOT-INF/lib/opentelemetry-javaagent-1.17.0.jar   
+      - OTEL_SERVICE_NAME=tasty-service
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://tempo:4317
+      - OTEL_METRICS_EXPORTER=none  
+
     logging: 
       driver: fluentd 
       options:
@@ -28,6 +34,7 @@ services:
       - restaurant-postgres
       - fluent-bit 
       - restaurant-keycloak
+      - tempo
     image: "order-service"
     container_name: "order-service"
     ports:
@@ -42,6 +49,10 @@ services:
       - SPRING_FLYWAY_URL=jdbc:postgresql://restaurant-postgres:5432/restaurantdb_order
       - SPRING_RABBITMQ_HOST=restaurant-rabbitmq
       - SPRING_SECURITY_OAUTH2_RESOURCESERVER_JWT_ISSUER_URI=http://host.docker.internal:8080/realms/restaurant
+      - JAVA_TOOL_OPTIONS=-javaagent:/workspace/BOOT-INF/lib/opentelemetry-javaagent-1.17.0.jar   
+      - OTEL_SERVICE_NAME=order-service
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://tempo:4317
+      - OTEL_METRICS_EXPORTER=none  
     logging: 
       driver: fluentd 
       options:
@@ -50,6 +61,7 @@ services:
   config-service:
     depends_on:
       - fluent-bit
+      - tempo
     image: "config-service"
     container_name: "config-service"
     ports:
@@ -59,6 +71,10 @@ services:
       - BPL_JVM_THREAD_COUNT=50
       - BPL_DEBUG_ENABLED=true
       - BPL_DEBUG_PORT=9888
+      - JAVA_TOOL_OPTIONS=-javaagent:/workspace/BOOT-INF/lib/opentelemetry-javaagent-1.17.0.jar   
+      - OTEL_SERVICE_NAME=config-service
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://tempo:4317
+      - OTEL_METRICS_EXPORTER=none  
     logging:
       driver: fluentd
       options:
@@ -70,6 +86,7 @@ services:
       - restaurant-keycloak
       - restaurant-redis
       - restaurant-ui
+      - tempo
     image: "edge-service"
     container_name: "edge-service"
     ports:
@@ -84,6 +101,10 @@ services:
       - SPRING_CLOUD_CONFIG_URI=http://config-service:8888
       - SPRING_REDIS_HOST=restaurant-redis
       - SPRING_SECURITY_OAUTH2_CLIENT_PROVIDER_KEYCLOAK_ISSUER_URI=http://host.docker.internal:8080/realms/restaurant
+      - JAVA_TOOL_OPTIONS=-javaagent:/workspace/BOOT-INF/lib/opentelemetry-javaagent-1.17.0.jar   
+      - OTEL_SERVICE_NAME=edge-service
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://tempo:4317
+      - OTEL_METRICS_EXPORTER=none 
     logging: 
       driver: fluentd 
       options:
@@ -93,6 +114,7 @@ services:
     depends_on:
       - restaurant-rabbitmq
       - fluent-bit 
+      - tempo
     image: "dispatcher-service"
     container_name: dispatcher-service
     ports:
@@ -103,6 +125,10 @@ services:
       - BPL_DEBUG_PORT=8003
       - SPRING_CLOUD_CONFIG_URI=http://config-service:8888
       - SPRING_RABBITMQ_HOST=restaurant-rabbitmq
+      - JAVA_TOOL_OPTIONS=-javaagent:/workspace/BOOT-INF/lib/opentelemetry-javaagent-1.17.0.jar   
+      - OTEL_SERVICE_NAME=dispatcher-service
+      - OTEL_EXPORTER_OTLP_ENDPOINT=http://tempo:4317
+      - OTEL_METRICS_EXPORTER=none 
     logging: 
       driver: fluentd 
       options:
@@ -167,6 +193,7 @@ services:
     depends_on:
       - loki
       - prometheus 
+      - tempo
     ports:
       - "3000:3000"
     environment:
@@ -202,3 +229,12 @@ services:
       - "9090:9090"
     volumes:
       - ./observability/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+
+  tempo:
+    image: grafana/tempo:1.5.0
+    container_name: tempo
+    command: -config.file /etc/tempo-config.yml
+    ports:
+      - "3110:3100"
+    volumes:
+      - ./observability/tempo/tempo.yml:/etc/tempo-config.yml
