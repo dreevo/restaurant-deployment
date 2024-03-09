@@ -1,0 +1,2 @@
+# set image for kustomize
+kustomize edit set image tasty-service=ghcr.io/dreevo/tasty-service:latest
